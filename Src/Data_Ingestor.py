@@ -24,16 +24,22 @@ class ZipDataIngestor(DataIngestor):
             zip_ref.extractall("extracted_data")
         
         # Find the extracted CSV file (assuming there is one CSV file inside the zip)
-        extracted_files = os.listdir("extracted_data")
-        csv_files = [f for f in extracted_files if f.endswith(".csv")]
+        csv_files = []
+        for root, dirs, files in os.walk("extracted_data"):
+            if "__MACOSX" in root:
+                continue
+
+            for f in files:
+                if f.endswith(".csv"):
+                    csv_files.append(os.path.join(root, f))
 
         if len(csv_files) == 0:
             raise FileNotFoundError("No CSV file found in the extracted data.")
-        if len(csv_files) >= 1:
+        if len(csv_files) > 1:
             raise ValueError("Multiple CSV files found. Please specify which one to use.")
         
         # Read the CSV into a DataFrame
-        csv_file_path = os.path.join("extracted_data", csv_files[0])
+        csv_file_path = os.path.join(csv_files[0])
         df = pd.read_csv(csv_file_path)
 
         return df
